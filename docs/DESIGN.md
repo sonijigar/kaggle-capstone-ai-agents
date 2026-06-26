@@ -26,52 +26,39 @@ alternative. Built for the Kaggle *AI Agents Intensive — Vibe Coding Capstone*
 ## 2. Architecture
 
 ### 2.1 System overview
-Top-level flow. The Prediction agent is a black box here — its internals are in §2.2.
-Solid = A2A (agent↔agent).
+The Concierge orchestrates three agents. (Prediction's internals are in §2.2.)
 
 ```mermaid
-flowchart TD
-    U([User]) --> C[Concierge<br/>resolve context · state · policy · HITL]
-    C -->|A2A| P[Prediction Agent<br/>risk · cause · confidence]
-    P --> D{risk vs<br/>threshold}
-    D -->|low| RE[Reassure &amp; stop]
-    D -->|high| PL[Rebooking Planner]
-    PL -. re-score candidates .-> P
-    PL --> G{{HITL approval<br/>option + price}}
-    G -->|approved| M[Rebooking Manager<br/>SANDBOX book + pay<br/>idempotent · budget guard]
-    M --> C
+flowchart LR
+    U([User]) --> C[Concierge]
+    C --> P[Prediction]
+    C --> PL[Rebooking Planner]
+    C --> M[Rebooking Manager]
 
-    classDef user fill:#fde68a,stroke:#b45309,color:#1f2937;
-    classDef orch fill:#1e3a8a,stroke:#172554,color:#ffffff;
-    classDef action fill:#fee2e2,stroke:#dc2626,color:#1f2937;
-    class U user;
-    class C,P,D orch;
-    class RE,PL,G,M action;
-```
-
-### 2.2 Prediction agent (internals)
-The four specialist agents fan out over A2A; each reads its source over MCP.
-Solid = A2A, dashed = MCP.
-
-```mermaid
-flowchart TD
-    P[Prediction Agent<br/>weighted fusion, anchored on prior]
-    P -->|A2A| W[Weather Agent] & N[Airport / NAS Agent] & AC[Aircraft Agent] & H[Historical / Prior Agent]
-
-    W -.MCP.-> wx[(aviationweather<br/>TAF/METAR)]
-    N -.MCP.-> nx[(FAA ASWS<br/>ground stops/GDP)]
-    AC -.MCP.-> ox[(OpenSky<br/>inbound tail)]
-    H -.MCP.-> db[(Flight DB<br/>+ trained model)]
-
-    W & N & AC & H ==> R[/RiskAssessment<br/>risk · cause · confidence/]
-
-    classDef orch fill:#1e3a8a,stroke:#172554,color:#ffffff;
+    classDef hub fill:#1e3a8a,stroke:#172554,color:#ffffff;
     classDef agent fill:#dbeafe,stroke:#3b82f6,color:#1f2937;
-    classDef data fill:#dcfce7,stroke:#16a34a,color:#1f2937;
-    class P,R orch;
-    class W,N,AC,H agent;
-    class wx,nx,ox,db data;
+    class C hub;
+    class P,PL,M agent;
 ```
+
+### 2.2 Prediction agent
+Prediction asks four specialists and combines their signals.
+
+```mermaid
+flowchart LR
+    P[Prediction] --> W[Weather]
+    P --> N[Airport / NAS]
+    P --> A[Aircraft]
+    P --> H[Historical]
+
+    classDef hub fill:#1e3a8a,stroke:#172554,color:#ffffff;
+    classDef agent fill:#dbeafe,stroke:#3b82f6,color:#1f2937;
+    class P hub;
+    class W,N,A,H agent;
+```
+
+Protocols: Concierge↔agents and Prediction↔specialists use **A2A**; each specialist
+reads its data source (aviationweather, FAA ASWS, OpenSky, Flight DB) over **MCP**.
 
 **Runtime flow**
 

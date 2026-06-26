@@ -20,21 +20,18 @@ Built for the **Kaggle AI Agents Intensive — Vibe Coding Capstone**.
 ```mermaid
 flowchart LR
     U([User]) --> C[Concierge]
-    C -->|A2A| P[Prediction]
-    P --> D{High risk?}
-    D -->|no| RE[Reassure]
-    D -->|yes| PL[Rebooking Planner]
-    PL --> G{{Human approval}}
-    G --> M[Rebooking Manager<br/>sandbox]
+    C --> P[Prediction]
+    C --> PL[Rebooking Planner]
+    C --> M[Rebooking Manager]
 
-    classDef orch fill:#1e3a8a,stroke:#172554,color:#ffffff;
-    classDef action fill:#fee2e2,stroke:#dc2626,color:#1f2937;
-    class C,P,D orch;
-    class RE,PL,G,M action;
+    classDef hub fill:#1e3a8a,stroke:#172554,color:#ffffff;
+    classDef agent fill:#dbeafe,stroke:#3b82f6,color:#1f2937;
+    class C hub;
+    class P,PL,M agent;
 ```
 
-Prediction is one box here; its four specialist agents + data sources, plus the
-runtime sequence, are in **[docs/DESIGN.md §2](docs/DESIGN.md)**.
+Prediction's four specialist agents, the rebooking/HITL flow, and the runtime
+sequence are in **[docs/DESIGN.md §2](docs/DESIGN.md)**.
 
 - **Predict:** fuse free public signals (weather forecasts, FAA airspace status, inbound-aircraft,
   historical model) into a calibrated delay/cancellation risk + the dominant cause.
