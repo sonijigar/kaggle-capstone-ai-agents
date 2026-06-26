@@ -29,8 +29,7 @@ alternative. Built for the Kaggle *AI Agents Intensive — Vibe Coding Capstone*
 
 ```mermaid
 flowchart TD
-    U([User]) --> C[Concierge<br/>orchestrator: state · policy · HITL]
-    C --- R[Flight-Context Resolver]
+    U([User]) --> C[Concierge<br/>orchestrator: resolve context · state · policy · HITL]
 
     C -->|A2A| P[Prediction Agent<br/>weighted fusion, anchored on prior]
 
@@ -98,8 +97,7 @@ Cross-cutting: Evaluation · Observability (log/trace/metrics) · Resumable sess
 
 | Agent | Responsibility | Inputs → Output |
 |---|---|---|
-| **Concierge** | Orchestrates, holds state, applies decision policy, manages HITL | user request → final answer/action |
-| **Flight-Context Resolver** | Parse NL flight ref → structured context | text → `FlightContext` |
+| **Concierge** | Resolves the request (NL flight ref → `FlightContext`), orchestrates, holds state, applies decision policy, manages HITL | user request → final answer/action |
 | **Prediction** | Fuse sub-signals into one calibrated risk + cause | `FlightContext` → `RiskAssessment` |
 | ↳ Weather | Origin+dest forecast/conditions signal | airports, time → signal |
 | ↳ Airport/NAS | Active ground stops / delay programs | airports → signal |
@@ -169,7 +167,7 @@ Thresholds are configurable and are themselves an eval target.
 
 | Phase | Deliverable | Skills proven |
 |---|---|---|
-| **MVP-1** | Concierge + Resolver + Prediction(Historical/Prior only) + backtest | multi-agent, eval |
+| **MVP-1** | Concierge (resolves context) + Prediction(Historical/Prior only) + backtest | multi-agent, eval |
 | **MVP-2** | + Weather & NAS live agents via MCP | MCP, A2A |
 | 3 | + Rebooking Planner (simulated alternatives) + re-predict loop | A2A negotiation |
 | 4 | + HITL gate + sandbox Rebooking Manager | HITL, long-running, state |

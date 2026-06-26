@@ -46,7 +46,7 @@ Design complete; implementation not started. Build order (ship the spine first):
 
 | Phase | Deliverable |
 |---|---|
-| **MVP-1** | Concierge + Flight-Context Resolver + Prediction (historical prior) + backtest |
+| **MVP-1** | Concierge (resolves flight context) + Prediction (historical prior) + backtest |
 | **MVP-2** | + Weather & NAS live agents via MCP |
 | 3–5 | Rebooking Planner → HITL gate + sandbox Manager → Aircraft agent + observability + demo |
 
