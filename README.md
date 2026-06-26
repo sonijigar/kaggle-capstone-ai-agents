@@ -27,6 +27,13 @@ flowchart LR
     D -->|yes| PL[Rebooking Planner]
     PL --> G{{Human approval}}
     G --> M[Rebooking Manager<br/>sandbox]
+
+    classDef orch fill:#1e3a8a,stroke:#172554,color:#ffffff;
+    classDef agent fill:#dbeafe,stroke:#3b82f6,color:#1f2937;
+    classDef action fill:#fee2e2,stroke:#dc2626,color:#1f2937;
+    class C,P,D orch;
+    class W,N,A,H agent;
+    class RE,PL,G,M action;
 ```
 
 Full component + sequence diagrams in **[docs/DESIGN.md §2](docs/DESIGN.md)**.

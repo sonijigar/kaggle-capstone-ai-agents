@@ -54,8 +54,16 @@ flowchart TD
     G -->|approved| M[Rebooking Manager<br/>SANDBOX book + pay<br/>idempotent · budget guard]
     M --> C
 
-    classDef ext fill:#eef,stroke:#88a;
-    class wx,nx,ox,db ext;
+    classDef user fill:#fde68a,stroke:#b45309,color:#1f2937;
+    classDef orch fill:#1e3a8a,stroke:#172554,color:#ffffff;
+    classDef agent fill:#dbeafe,stroke:#3b82f6,color:#1f2937;
+    classDef data fill:#dcfce7,stroke:#16a34a,color:#1f2937;
+    classDef action fill:#fee2e2,stroke:#dc2626,color:#1f2937;
+    class U user;
+    class C,P,D orch;
+    class W,N,AC,H agent;
+    class wx,nx,ox,db data;
+    class RE,PL,G,M action;
 ```
 
 **Runtime flow**
