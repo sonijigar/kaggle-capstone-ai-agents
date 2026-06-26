@@ -21,7 +21,6 @@ Built for the **Kaggle AI Agents Intensive — Vibe Coding Capstone**.
 flowchart LR
     U([User]) --> C[Concierge]
     C -->|A2A| P[Prediction]
-    P --> W[Weather] & N[Airport/NAS] & A[Aircraft] & H[Historical-Prior]
     P --> D{High risk?}
     D -->|no| RE[Reassure]
     D -->|yes| PL[Rebooking Planner]
@@ -29,14 +28,13 @@ flowchart LR
     G --> M[Rebooking Manager<br/>sandbox]
 
     classDef orch fill:#1e3a8a,stroke:#172554,color:#ffffff;
-    classDef agent fill:#dbeafe,stroke:#3b82f6,color:#1f2937;
     classDef action fill:#fee2e2,stroke:#dc2626,color:#1f2937;
     class C,P,D orch;
-    class W,N,A,H agent;
     class RE,PL,G,M action;
 ```
 
-Full component + sequence diagrams in **[docs/DESIGN.md §2](docs/DESIGN.md)**.
+Prediction is one box here; its four specialist agents + data sources, plus the
+runtime sequence, are in **[docs/DESIGN.md §2](docs/DESIGN.md)**.
 
 - **Predict:** fuse free public signals (weather forecasts, FAA airspace status, inbound-aircraft,
   historical model) into a calibrated delay/cancellation risk + the dominant cause.
