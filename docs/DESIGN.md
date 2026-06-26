@@ -25,30 +25,72 @@ alternative. Built for the Kaggle *AI Agents Intensive — Vibe Coding Capstone*
 
 ## 2. Architecture
 
-```
-Concierge (orchestrator: conversation, state, decision policy, HITL)
-  │
-  ├─ 0. Flight-Context Resolver  ──────────────► FlightContext
-  │
-  ├─► Prediction Agent  ─ weighted fusion, anchored on prior ─► RiskAssessment
-  │      ├─ Weather Agent          [MCP → aviationweather: TAF/METAR, origin+dest]
-  │      ├─ Airport/NAS Agent       [MCP → FAA ASWS: ground stops / GDP]
-  │      ├─ Aircraft Agent          [MCP → OpenSky: inbound tail]  (+ time-of-day proxy)
-  │      └─ Historical/Prior Agent  [MCP → flight DB + trained model]   ◄ eval moat & fallback
-  │
-  ├─ decision policy (risk vs threshold) ──► low risk: reassure & stop
-  │                                          high risk: ↓
-  ├─► Rebooking Planner  ─ search sandbox flight API ─► RebookOption[]
-  │        └─ re-calls Prediction on each candidate (avoid rebooking onto a doomed flight)
-  │
-  └─ ⏸ HITL approval gate (human selects option + price)
-        └─► Rebooking Manager  [SANDBOX booking + payment; idempotent; budget guard]
-              └────────────────────────────────► BookingConfirmation
+**Component view** — solid = A2A (agent↔agent), dashed = MCP (agent↔data).
 
-cross-cutting: Evaluation · Observability (log/trace/metrics) · Resumable session/memory
+```mermaid
+flowchart TD
+    U([User]) --> C[Concierge<br/>orchestrator: state · policy · HITL]
+    C --- R[Flight-Context Resolver]
+
+    C -->|A2A| P[Prediction Agent<br/>weighted fusion, anchored on prior]
+
+    subgraph PRED [Prediction sub-agents]
+        W[Weather Agent]
+        N[Airport / NAS Agent]
+        AC[Aircraft Agent]
+        H[Historical / Prior Agent]
+    end
+    P -->|A2A| W & N & AC & H
+
+    W -.MCP.-> wx[(aviationweather<br/>TAF/METAR)]
+    N -.MCP.-> nx[(FAA ASWS<br/>ground stops/GDP)]
+    AC -.MCP.-> ox[(OpenSky<br/>inbound tail)]
+    H -.MCP.-> db[(Flight DB<br/>+ trained model)]
+
+    P --> D{risk vs<br/>threshold}
+    D -->|low| RE[Reassure &amp; stop]
+    D -->|high| PL[Rebooking Planner]
+    PL -. re-score candidates .-> P
+    PL --> G{{HITL approval<br/>option + price}}
+    G -->|approved| M[Rebooking Manager<br/>SANDBOX book + pay<br/>idempotent · budget guard]
+    M --> C
+
+    classDef ext fill:#eef,stroke:#88a;
+    class wx,nx,ox,db ext;
 ```
 
-**Boundaries:** agent→agent calls use **A2A** (agent cards). agent→data/tool calls use **MCP**.
+**Runtime flow**
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant C as Concierge
+    participant P as Prediction
+    participant S as Sub-agents<br/>(Weather/NAS/Aircraft/Prior)
+    participant PL as Rebooking Planner
+    participant M as Rebooking Mgr (sandbox)
+
+    User->>C: "Is DL2419 Mon 7am at risk?"
+    C->>P: FlightContext
+    P->>S: fan-out (A2A); each fetches via MCP
+    S-->>P: signal + confidence
+    P-->>C: RiskAssessment (risk · cause · confidence)
+    alt low risk
+        C-->>User: Reassure + why
+    else high risk
+        C->>PL: find alternatives
+        PL->>P: re-score each candidate
+        PL-->>C: ranked RebookOption[]
+        C-->>User: options + recommendation
+        User->>C: approve option + price (HITL)
+        C->>M: BookingRequest
+        M-->>C: Confirmation (sandbox PNR)
+        C-->>User: booked (sandbox)
+    end
+```
+
+Cross-cutting: Evaluation · Observability (log/trace/metrics) · Resumable session/memory.
+**Boundaries:** agent→agent = **A2A** (agent cards); agent→data/tool = **MCP**.
 
 ---
 

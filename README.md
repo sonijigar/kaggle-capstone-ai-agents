@@ -17,12 +17,19 @@ Built for the **Kaggle AI Agents Intensive — Vibe Coding Capstone**.
 
 ## What it does (in one diagram)
 
+```mermaid
+flowchart LR
+    U([User]) --> C[Concierge]
+    C -->|A2A| P[Prediction]
+    P --> W[Weather] & N[Airport/NAS] & A[Aircraft] & H[Historical-Prior]
+    P --> D{High risk?}
+    D -->|no| RE[Reassure]
+    D -->|yes| PL[Rebooking Planner]
+    PL --> G{{Human approval}}
+    G --> M[Rebooking Manager<br/>sandbox]
 ```
-Concierge ── Prediction ── Weather · Airport/NAS · Aircraft · Historical-Prior
-    │                         (risk + cause + confidence)
-    ├─ low risk → reassure
-    └─ high risk → Rebooking Planner → ⏸ human approval → Rebooking Manager (sandbox)
-```
+
+Full component + sequence diagrams in **[docs/DESIGN.md §2](docs/DESIGN.md)**.
 
 - **Predict:** fuse free public signals (weather forecasts, FAA airspace status, inbound-aircraft,
   historical model) into a calibrated delay/cancellation risk + the dominant cause.
