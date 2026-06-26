@@ -1,0 +1,18 @@
+# Data & model artifacts (download/generate locally)
+data/*.csv
+data/*.db
+data/*.pkl
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.egg-info/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
