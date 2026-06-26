@@ -65,15 +65,15 @@ sequenceDiagram
     actor User
     participant C as Concierge
     participant P as Prediction
-    participant S as Sub-agents<br/>(Weather/NAS/Aircraft/Prior)
+    participant S as Sub-agents
     participant PL as Rebooking Planner
-    participant M as Rebooking Mgr (sandbox)
+    participant M as Rebooking Manager
 
-    User->>C: "Is DL2419 Mon 7am at risk?"
+    User->>C: Is DL2419 Mon 7am at risk?
     C->>P: FlightContext
-    P->>S: fan-out (A2A); each fetches via MCP
+    P->>S: fan-out via A2A, each fetches over MCP
     S-->>P: signal + confidence
-    P-->>C: RiskAssessment (risk · cause · confidence)
+    P-->>C: RiskAssessment - risk, cause, confidence
     alt low risk
         C-->>User: Reassure + why
     else high risk
