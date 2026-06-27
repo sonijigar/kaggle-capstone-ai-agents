@@ -45,3 +45,28 @@ def resolve_flight_query(carrier: str, origin: str, dest: str,
         "day_of_week": day_of_week,
         "dep_time_blk": _dep_time_blk(hhmm)
     }
+
+def search_flight_schedules(origin: str, dest: str, date: str) -> dict:
+    """Mock database lookup for flight schedules. Returns available flights."""
+    origin = origin.upper().strip()
+    dest = dest.upper().strip()
+    date = date.lower().strip()
+    
+    # Mock data
+    MOCK_DB = {
+        ("SEA", "SFO"): [
+            {"carrier": "DL", "flight_no": "1234", "dep_time": "08:30am", "origin": "SEA"},
+            {"carrier": "AS", "flight_no": "5678", "dep_time": "01:00pm", "origin": "SEA"},
+            {"carrier": "UA", "flight_no": "9012", "dep_time": "06:45pm", "origin": "SEA"}
+        ],
+        ("PAE", "SFO"): [
+            {"carrier": "AS", "flight_no": "1111", "dep_time": "07:00am", "origin": "PAE"},
+        ]
+    }
+    
+    flights = MOCK_DB.get((origin, dest), [])
+    
+    if not flights:
+        return {"status": "no_flights_found", "message": f"No flights found from {origin} to {dest} on {date}."}
+        
+    return {"status": "success", "flights": flights}
