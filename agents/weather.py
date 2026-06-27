@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -5,42 +6,14 @@ warnings.filterwarnings("ignore", category=UserWarning)
 from google.adk.agents import Agent
 from google.adk.models import Gemini
 from google.adk.skills import load_skill_from_dir
+from google.adk.tools.mcp_tool import McpToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
+from mcp import StdioServerParameters
 from google.genai import types
 
 _SKILL = load_skill_from_dir(Path(__file__).parent.parent / "skills" / "weather")
+_METAR_SERVER = str(Path(__file__).parent.parent / "mcp_servers" / "metarmcp" / "server.py")
 
-async def get_weather(origin: str, dest: str) -> dict:
-    """STUB weather until MCP lands (Part 2)."""
-    try:
-        from agents.custom_agent_tool import parent_ic_var, parent_path_var
-        from google.adk.events import Event, EventActions
-        
-        ic = parent_ic_var.get()
-        parent_path = parent_path_var.get()
-        if ic and getattr(ic, "_event_queue", None) is not None:
-            # ADK natively expects tool call events to use the calling agent's exact path
-            tool_node_path = parent_path
-            
-            tool_event = Event(
-                invocation_id=ic.invocation_id,
-                author="weather",
-                node_path=tool_node_path,
-                actions=EventActions(),
-                content=types.Content(
-                    role="model",
-                    parts=[types.Part.from_function_call(
-                        name="get_weather",
-                        args={"origin": origin, "dest": dest}
-                    )]
-                )
-            )
-            import asyncio
-            asyncio.create_task(ic._enqueue_event(tool_event))
-    except Exception as e:
-        print(f"Failed to inject tool event: {e}")
-
-    return {"origin_risk": 0.10, "dest_risk": 0.10,
-            "summary": "STUB: clear, light wind", "confidence": 0.4}
 
 def build_weather_agent() -> Agent:
     return Agent(
@@ -51,6 +24,16 @@ def build_weather_agent() -> Agent:
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
         instruction=_SKILL.instructions,
-        tools=[get_weather],
-        output_key="weather_signal"
+        tools=[
+            McpToolset(
+                connection_params=StdioConnectionParams(
+                    server_params=StdioServerParameters(
+                        command=sys.executable,
+                        args=[_METAR_SERVER],
+                    ),
+                ),
+                tool_filter=["fetch_metar", "fetch_taf"],
+            )
+        ],
+        output_key="weather_signal",
     )
