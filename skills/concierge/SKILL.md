@@ -51,7 +51,7 @@ Follow this conversation loop:
     "p_delay15": float,
     "p_cancel": float,
     "confidence": float,
-    "dominant_cause": "historical(STUB)",
+    "dominant_cause": "historical",
     "explanation": "string explaining the risk details clearly and politely to the user"
 }
 ```

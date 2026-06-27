@@ -2,6 +2,7 @@
 data/*.csv
 data/*.db
 data/*.pkl
+data/*.json
 *.zip
 
 # Python
