@@ -4,7 +4,10 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 from google.adk.agents import Agent
 from google.adk.models import Gemini
+from google.adk.skills import load_skill_from_dir
 from google.genai import types
+
+_SKILL = load_skill_from_dir(Path(__file__).parent.parent / "skills" / "weather")
 
 async def get_weather(origin: str, dest: str) -> dict:
     """STUB weather until MCP lands (Part 2)."""
@@ -41,13 +44,13 @@ async def get_weather(origin: str, dest: str) -> dict:
 
 def build_weather_agent() -> Agent:
     return Agent(
-        name="weather",
-        description="Provides weather signals for origin and destination.",
+        name=_SKILL.frontmatter.name,
+        description=_SKILL.frontmatter.description,
         model=Gemini(
             model="gemini-3.1-flash-lite",
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
-        instruction=(Path(__file__).parent.parent / "skills" / "weather" / "SKILL.md").read_text(),
+        instruction=_SKILL.instructions,
         tools=[get_weather],
         output_key="weather_signal"
     )
