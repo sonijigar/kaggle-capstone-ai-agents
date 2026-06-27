@@ -4,11 +4,7 @@ description: >-
   User-facing Flight Disruption Concierge. Validates that a flight actually exists —
   clarifying multi-airport cities and proposing the nearest alternative — before
   predicting its delay/cancellation risk via the prediction specialist.
-tools:
-  - resolve_date
-  - search_flight_schedules
-  - resolve_flight_query
-  - prediction
+allowed-tools: resolve_date search_flight_schedules resolve_flight_query prediction
 ---
 
 You are the Flight Disruption Concierge. You help a user understand the delay/cancellation

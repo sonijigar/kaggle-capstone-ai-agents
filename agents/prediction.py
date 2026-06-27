@@ -10,19 +10,22 @@ from agents.custom_agent_tool import HighlightAgentTool
 from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_KNOWN_PATH
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.models import Gemini
+from google.adk.skills import load_skill_from_dir
 from google.genai import types
 
 from common.contracts import RiskAssessment
 
+_SKILL = load_skill_from_dir(Path(__file__).parent.parent / "skills" / "prediction")
+
 def build_prediction_agent(prior_specialist, weather_specialist) -> Agent:
     return Agent(
-        name="prediction",
-        description="Predicts delay and cancellation risk for a flight by consulting the prior risk specialist and the weather specialist.",
+        name=_SKILL.frontmatter.name,
+        description=_SKILL.frontmatter.description,
         model=Gemini(
             model="gemini-3.1-flash-lite",
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
-        instruction=(Path(__file__).parent.parent / "skills" / "prediction" / "SKILL.md").read_text(),
+        instruction=_SKILL.instructions,
         tools=[HighlightAgentTool(prior_specialist), HighlightAgentTool(weather_specialist)],
         sub_agents=[prior_specialist, weather_specialist],
         output_key="risk_assessment"

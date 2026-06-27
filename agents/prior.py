@@ -8,7 +8,10 @@ warnings.filterwarnings("ignore", category=UserWarning)
 from google.adk.agents import Agent
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.models import Gemini
+from google.adk.skills import load_skill_from_dir
 from google.genai import types
+
+_SKILL = load_skill_from_dir(Path(__file__).parent.parent / "skills" / "prior")
 
 async def predict_prior(carrier: str, origin: str, dest: str,
                   day_of_week: int, dep_time_blk: str) -> dict:
@@ -80,13 +83,13 @@ async def after_prior(callback_context: CallbackContext):
 
 def build_prior_agent() -> Agent:
     return Agent(
-        name="prior",
-        description="Calculates historical/prior delay and cancellation risk for a flight query.",
+        name=_SKILL.frontmatter.name,
+        description=_SKILL.frontmatter.description,
         model=Gemini(
             model="gemini-3.1-flash-lite",
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
-        instruction=(Path(__file__).parent.parent / "skills" / "prior" / "SKILL.md").read_text(),
+        instruction=_SKILL.instructions,
         tools=[predict_prior],
         before_agent_callback=before_prior,
         after_agent_callback=after_prior,
