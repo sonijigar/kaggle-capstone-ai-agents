@@ -8,6 +8,28 @@ Built for the **Kaggle AI Agents Intensive — Vibe Coding Capstone**.
 
 ---
 
+## Quickstart
+
+**Prerequisites:** Python 3.11+, **[uv](https://astral.sh/uv)**, and **Node.js / npx**
+(the weather and flight MCP servers are launched on demand via `npx`/`uvx`).
+
+```bash
+make install      # uv sync
+make setup        # installs deps + downloads/verifies the MCP servers (first run is slow)
+make playground   # launches the ADK dev UI on http://127.0.0.1:8080
+```
+Then open **http://127.0.0.1:8080** and **select the `playground` app** in the dropdown
+(the dev UI lists every folder as an "app" — `playground` is the runnable one). Ask e.g.
+*"6pm flight from Seattle to SFO tomorrow"* and watch the trace.
+
+> Other targets: `make test`, `make train`, `make backtest` (see **Data & model** below).
+
+**Troubleshooting** — *"Tool 'search_flights'/'get_forecast' not found"*: the MCP server
+didn't start. Run `make setup` and confirm `uvx --version` and `npx --version` work — a
+missing runner or blocked network is the usual cause.
+
+---
+
 ## Start here
 
 | If you want to… | Read |
@@ -43,63 +65,37 @@ Specialist agents each own one signal/data source and communicate over **A2A**; 
 **MCP** servers. The value is explainable, composable reasoning over live + historical data — not a
 single black-box score. See [DESIGN.md §2](docs/DESIGN.md) for the full rationale.
 
-## Status & roadmap
-Design complete; implementation not started. Build order (ship the spine first):
+## Status
+Working end-to-end: Concierge → Prediction → {Prior, Weather} over A2A, with **two keyless
+MCPs** (flight search via `uvx fli`, weather via `npx @dangahagan/weather-mcp`) and a **trained
+delay model + backtest**. Remaining: rebooking + HITL, deployment, and the writeup/video.
+Full roadmap in [docs/DESIGN.md §8](docs/DESIGN.md).
 
-| Phase | Deliverable |
-|---|---|
-| **MVP-1** | Concierge (resolves flight context) + Prediction (historical prior) + backtest |
-| **MVP-2** | + Weather & NAS live agents via MCP |
-| 3–5 | Rebooking Planner → HITL gate + sandbox Manager → Aircraft agent + observability + demo |
+## Data & model
 
-Full detail in [docs/DESIGN.md §8](docs/DESIGN.md).
+**Dataset:** `divyansh22/flight-delay-prediction` (US DOT BTS, Jan 2019/2020), target `ARR_DEL15`.
+The CSVs and trained artifacts are **gitignored** (not in the repo) — regenerate locally:
 
-## Data
-Historical prior/eval: `divyansh22/flight-delay-prediction` (US DOT BTS, Jan 2019/2020), target `ARR_DEL15`.
-Live signals: aviationweather.gov, FAA ASWS, OpenSky (all free). Booking: Amadeus/Duffel **sandbox**.
-
-## Proposed repo layout
-```
-agents/  mcp_servers/  data/  eval/  common/  app/  docs/
-```
-
-## Running MVP-1a (A2A Flow + Stubbed Prior)
-
-MVP-1a proves the Concierge -> Prediction -> Prior A2A chain with a stubbed Prior risk assessment.
-
-### 1. Installation
-Install the project dependencies using `uv`:
 ```bash
-uv sync
+# 1. place Jan_2019_ontime.csv and Jan_2020_ontime.csv in data/  (from the Kaggle dataset)
+make train      # -> data/model.pkl + data/cancel_rates.json   (LogisticRegression on Jan 2019)
+make backtest   # -> AUC + Brier + calibration on the Jan-2020 holdout
 ```
 
-### 2. Start A2A Services
+If `data/model.pkl` is **absent, the Prior agent falls back to a rule-of-thumb** — so the system
+still runs without training; `make train` just upgrades it to the real model.
 
-To run the services, you must start both the **Prior** and **Prediction** agents in separate terminal sessions:
+**Live signals:** flight search (Google Flights via `fli`), weather (NWS/Open-Meteo) — both keyless.
 
-* **Prior Agent** (Port 8001):
-  ```bash
-  uv run uvicorn agents.prior:app --port 8001
-  ```
-
-* **Prediction Agent** (Port 8002):
-  ```bash
-  uv run uvicorn agents.prediction:app --port 8002
-  ```
-
-### 3. Run the CLI
-Once both services are running, execute the CLI in a separate terminal session:
-```bash
-uv run python app/cli.py "DL ORD->ATL Monday 7am"
+## Repo layout
 ```
-
-This runs the entire chain and outputs the stubbed `RiskAssessment` object.
-
-### 4. Start ADK Playground (Web UI Demo)
-To interact with the Concierge agent in a chat interface:
-```bash
-uvx google-agents-cli playground
+agents/   concierge, prediction, prior, weather  (+ A2A entrypoints)
+skills/   per-agent SKILL.md (agentskills.io frontmatter + instructions)
+data/     train_model.py            (model.pkl, cancel_rates.json, *.csv gitignored)
+eval/     backtest.py
+playground/  in-process composition for the dev UI
+scripts/  prewarm.py                (MCP server pre-warm/verify)
+docs/     DESIGN.md
 ```
-Once started, open [http://127.0.0.1:8080/dev-ui/?app=agents](http://127.0.0.1:8080/dev-ui/?app=agents) in your web browser. You can type flight queries (e.g. `"DL ORD->ATL Monday 7am"`) and view the full multi-agent A2A execution trace and reasoning path.
 
 

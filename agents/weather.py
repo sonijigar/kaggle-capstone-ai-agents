@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -12,7 +11,6 @@ from mcp import StdioServerParameters
 from google.genai import types
 
 _SKILL = load_skill_from_dir(Path(__file__).parent.parent / "skills" / "weather")
-_METAR_SERVER = str(Path(__file__).parent.parent / "mcp_servers" / "metarmcp" / "server.py")
 
 
 def build_weather_agent() -> Agent:
@@ -25,14 +23,15 @@ def build_weather_agent() -> Agent:
         ),
         instruction=_SKILL.instructions,
         tools=[
+            # Keyless weather MCP (NOAA/NWS + Open-Meteo) run on demand via npx — no vendored code.
             McpToolset(
                 connection_params=StdioConnectionParams(
                     server_params=StdioServerParameters(
-                        command=sys.executable,
-                        args=[_METAR_SERVER],
+                        command="npx",
+                        args=["-y", "@dangahagan/weather-mcp@1.8.0"],
                     ),
                 ),
-                tool_filter=["fetch_metar", "fetch_taf"],
+                tool_filter=["get_forecast", "get_current_conditions", "search_location"],
             )
         ],
         output_key="weather_signal",
