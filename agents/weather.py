@@ -6,7 +6,6 @@ warnings.filterwarnings("ignore", category=UserWarning)
 from google.adk.agents import Agent
 from google.adk.models import Gemini
 from google.adk.skills import load_skill_from_dir
-from agents.model import build_model
 from google.adk.tools.mcp_tool import McpToolset
 from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
 from mcp import StdioServerParameters
@@ -20,7 +19,10 @@ def build_weather_agent() -> Agent:
     return Agent(
         name=_SKILL.frontmatter.name,
         description=_SKILL.frontmatter.description,
-        model=build_model(),
+        model=Gemini(
+            model="gemini-3.1-flash-lite",
+            retry_options=types.HttpRetryOptions(attempts=6),
+        ),
         instruction=_SKILL.instructions,
         tools=[
             McpToolset(

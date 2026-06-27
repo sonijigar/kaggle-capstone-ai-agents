@@ -9,7 +9,6 @@ from google.adk.agents import Agent
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.models import Gemini
 from google.adk.skills import load_skill_from_dir
-from agents.model import build_model
 from google.genai import types
 
 _SKILL = load_skill_from_dir(Path(__file__).parent.parent / "skills" / "prior")
@@ -86,7 +85,10 @@ def build_prior_agent() -> Agent:
     return Agent(
         name=_SKILL.frontmatter.name,
         description=_SKILL.frontmatter.description,
-        model=build_model(),
+        model=Gemini(
+            model="gemini-3.1-flash-lite",
+            retry_options=types.HttpRetryOptions(attempts=6),
+        ),
         instruction=_SKILL.instructions,
         tools=[predict_prior],
         before_agent_callback=before_prior,

@@ -11,7 +11,6 @@ from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_K
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 from google.adk.models import Gemini
 from google.adk.skills import load_skill_from_dir
-from agents.model import build_model
 from google.genai import types
 
 from common.contracts import RiskAssessment
@@ -22,7 +21,10 @@ def build_prediction_agent(prior_specialist, weather_specialist) -> Agent:
     return Agent(
         name=_SKILL.frontmatter.name,
         description=_SKILL.frontmatter.description,
-        model=build_model(),
+        model=Gemini(
+            model="gemini-3.1-flash-lite",
+            retry_options=types.HttpRetryOptions(attempts=6),
+        ),
         instruction=_SKILL.instructions,
         tools=[HighlightAgentTool(prior_specialist), HighlightAgentTool(weather_specialist)],
         sub_agents=[prior_specialist, weather_specialist],

@@ -11,5 +11,4 @@ dependencies = [
     "pydantic>=2.0.0",
     "sse-starlette",
     "mcp>=1.0.0",
-    "litellm>=1.0.0",
 ]
