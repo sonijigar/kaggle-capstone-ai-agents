@@ -15,3 +15,9 @@ class RiskAssessment(BaseModel):
     confidence: float = Field(description="Confidence of assessment (0..1)")
     dominant_cause: str = Field(default="historical", description="Primary cause of risk")
     explanation: str = Field(description="Textual explanation of the risk assessment")
+
+class WeatherSignal(BaseModel):
+    origin_risk: float   # 0..1
+    dest_risk: float     # 0..1
+    summary: str
+    confidence: float
