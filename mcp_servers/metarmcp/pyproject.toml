@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "metar-mcp-server"
+version = "0.1.0"
+description = "MCP server for fetching and parsing METAR weather data"
+authors = ["mangobanaani@github.org"]
+readme = "README.md"
+license = "MIT"
+packages = [{include = "server.py"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+httpx = "^0.27.0"
+mcp = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
