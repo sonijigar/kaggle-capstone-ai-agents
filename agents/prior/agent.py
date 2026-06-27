@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+from pathlib import Path
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -85,11 +86,7 @@ def build_prior_agent() -> Agent:
             model="gemini-3.1-flash-lite",
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
-        instruction="""You are the Historical/Prior delay risk specialist.
-        When a user asks you to predict the prior delay/cancellation risk for a flight, always use the `predict_prior` tool.
-        Call the tool using the flight's carrier, origin, dest, day_of_week, and dep_time_blk.
-        Return the tool's output dictionary exactly as a JSON response.
-        """,
+        instruction=(Path(__file__).parent / "instruction.md").read_text(),
         tools=[predict_prior],
         before_agent_callback=before_prior,
         after_agent_callback=after_prior,
