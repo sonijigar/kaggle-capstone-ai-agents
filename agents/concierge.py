@@ -12,6 +12,7 @@ from google.adk.models import Gemini
 from google.genai import types
 from agents.concierge_tools import resolve_date, resolve_flight_query, search_flight_schedules
 from google.adk.skills import load_skill_from_dir
+from agents.model import build_model
 
 _SKILL = load_skill_from_dir(Path(__file__).parent.parent / "skills" / "concierge")
 
@@ -19,10 +20,7 @@ def build_concierge_agent(prediction_specialist) -> Agent:
     return Agent(
         name=_SKILL.frontmatter.name,
         description=_SKILL.frontmatter.description,
-        model=Gemini(
-            model="gemini-3.1-flash-lite",
-            retry_options=types.HttpRetryOptions(attempts=6),
-        ),
+        model=build_model(),
         instruction=_SKILL.instructions,
         tools=[resolve_date, search_flight_schedules, resolve_flight_query, HighlightAgentTool(prediction_specialist)],
         sub_agents=[prediction_specialist],
