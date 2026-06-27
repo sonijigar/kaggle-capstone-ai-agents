@@ -47,7 +47,7 @@ def build_weather_agent() -> Agent:
             model="gemini-3.1-flash-lite",
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
-        instruction=(Path(__file__).parent / "instruction.md").read_text(),
+        instruction=(Path(__file__).parent.parent / "skills" / "weather" / "SKILL.md").read_text(),
         tools=[get_weather],
         output_key="weather_signal"
     )

@@ -10,7 +10,7 @@ load_dotenv()  # Load environment variables from .env file
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
-from agents.concierge.agent import concierge_agent
+from agents.concierge import concierge_agent
 from common.contracts import RiskAssessment
 
 async def run_query(query: str):

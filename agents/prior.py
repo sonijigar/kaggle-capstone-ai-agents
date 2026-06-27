@@ -86,7 +86,7 @@ def build_prior_agent() -> Agent:
             model="gemini-3.1-flash-lite",
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
-        instruction=(Path(__file__).parent / "instruction.md").read_text(),
+        instruction=(Path(__file__).parent.parent / "skills" / "prior" / "SKILL.md").read_text(),
         tools=[predict_prior],
         before_agent_callback=before_prior,
         after_agent_callback=after_prior,
