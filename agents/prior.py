@@ -13,9 +13,20 @@ from google.genai import types
 
 _SKILL = load_skill_from_dir(Path(__file__).parent.parent / "skills" / "prior")
 
+# Trained delay model (MVP-1b). Falls back to a rule-of-thumb if the artifact is missing.
+import json
+import joblib
+import pandas as pd
+_DATA = Path(__file__).parent.parent / "data"
+try:
+    _MODEL = joblib.load(_DATA / "model.pkl")
+    _CANCEL = json.loads((_DATA / "cancel_rates.json").read_text())
+except Exception:
+    _MODEL, _CANCEL = None, {"by_carrier": {}, "global": 0.03}
+
 async def predict_prior(carrier: str, origin: str, dest: str,
                   day_of_week: int, dep_time_blk: str) -> dict:
-    """STUB risk until the real model lands (MVP-1b). Evenings ~ riskier.
+    """Delay/cancellation risk from the trained Jan-2019 model (rule-of-thumb fallback if model.pkl is missing).
 
     Args:
         carrier: OP_UNIQUE_CARRIER, e.g. "DL"
@@ -55,19 +66,37 @@ async def predict_prior(carrier: str, origin: str, dest: str,
     except Exception as e:
         print(f"Failed to inject tool event: {e}")
 
+    if _MODEL is not None:
+        X = pd.DataFrame([{
+            "OP_UNIQUE_CARRIER": carrier, "ORIGIN": origin, "DEST": dest,
+            "DAY_OF_WEEK": str(day_of_week), "DEP_TIME_BLK": dep_time_blk,
+        }])
+        p_delay = round(float(_MODEL.predict_proba(X)[0, 1]), 3)
+        p_cancel = round(float(_CANCEL["by_carrier"].get(carrier, _CANCEL["global"])), 3)
+        return {
+            "p_delay15": p_delay,
+            "p_cancel": p_cancel,
+            "confidence": 0.6,
+            "dominant_cause": "historical",
+            "explanation": (
+                f"Logistic-regression model trained on Jan-2019 BTS data: "
+                f"{carrier} {origin}->{dest}, {dep_time_blk} block ~ "
+                f"{p_delay:.0%} chance of a 15+ min arrival delay."
+            ),
+        }
+
+    # Fallback rule-of-thumb if data/model.pkl is not present
     try:
-        # Extract hour from the departure time block (e.g. "0700-0759" -> 7)
         hour = int(dep_time_blk[:2])
     except (ValueError, TypeError, IndexError):
-        hour = 12  # Default fallback if block is malformed
-
+        hour = 12
     p = 0.18 + (0.10 if hour >= 17 else 0.05 if hour >= 12 else 0.0)
     return {
         "p_delay15": round(p, 2),
         "p_cancel": 0.03,
         "confidence": 0.5,
         "dominant_cause": "historical(STUB)",
-        "explanation": f"stub risk for {dep_time_blk}"
+        "explanation": f"stub risk for {dep_time_blk} (model.pkl not found)"
     }
 
 from google.adk.agents.callback_context import CallbackContext
