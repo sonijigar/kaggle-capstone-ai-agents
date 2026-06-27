@@ -1,0 +1,15 @@
+name: "kaggle-capstone-ai-agents"
+acli_version: "0.5.1"
+agent_directory: "playground"
+region: "us-east1"
+base_template: "local_kaggle-capstone-ai-agents"
+generated_at: "2026-06-26T08:35:21.823244+00:00"
+language: "python"
+create_params:
+  deployment_target: "none"
+  session_type: "in_memory"
+  cicd_runner: "skip"
+  include_data_ingestion: false
+  
+  datastore: "none"
+  agent_guidance_filename: "AGENTS.md"

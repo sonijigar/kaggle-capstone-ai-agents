@@ -62,3 +62,44 @@ Live signals: aviationweather.gov, FAA ASWS, OpenSky (all free). Booking: Amadeu
 ```
 agents/  mcp_servers/  data/  eval/  common/  app/  docs/
 ```
+
+## Running MVP-1a (A2A Flow + Stubbed Prior)
+
+MVP-1a proves the Concierge -> Prediction -> Prior A2A chain with a stubbed Prior risk assessment.
+
+### 1. Installation
+Install the project dependencies using `uv`:
+```bash
+uv sync
+```
+
+### 2. Start A2A Services
+
+To run the services, you must start both the **Prior** and **Prediction** agents in separate terminal sessions:
+
+* **Prior Agent** (Port 8001):
+  ```bash
+  uv run uvicorn agents.prior:app --port 8001
+  ```
+
+* **Prediction Agent** (Port 8002):
+  ```bash
+  uv run uvicorn agents.prediction:app --port 8002
+  ```
+
+### 3. Run the CLI
+Once both services are running, execute the CLI in a separate terminal session:
+```bash
+uv run python app/cli.py "DL ORD->ATL Monday 7am"
+```
+
+This runs the entire chain and outputs the stubbed `RiskAssessment` object.
+
+### 4. Start ADK Playground (Web UI Demo)
+To interact with the Concierge agent in a chat interface:
+```bash
+uvx google-agents-cli playground
+```
+Once started, open [http://127.0.0.1:8080/dev-ui/?app=agents](http://127.0.0.1:8080/dev-ui/?app=agents) in your web browser. You can type flight queries (e.g. `"DL ORD->ATL Monday 7am"`) and view the full multi-agent A2A execution trace and reasoning path.
+
+

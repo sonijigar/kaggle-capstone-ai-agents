@@ -1,0 +1,13 @@
+[project]
+name = "kaggle-capstone-ai-agents"
+version = "0.1.0"
+description = "Flight Disruption Concierge MVP-1a"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "google-adk[a2a]>=0.5.0",
+    "uvicorn>=0.22.0",
+    "httpx>=0.24.0",
+    "pydantic>=2.0.0",
+    "sse-starlette",
+]
