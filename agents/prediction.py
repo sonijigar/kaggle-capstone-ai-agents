@@ -22,7 +22,7 @@ def build_prediction_agent(prior_specialist, weather_specialist) -> Agent:
             model="gemini-3.1-flash-lite",
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
-        instruction=(Path(__file__).parent / "instruction.md").read_text(),
+        instruction=(Path(__file__).parent.parent / "skills" / "prediction" / "SKILL.md").read_text(),
         tools=[HighlightAgentTool(prior_specialist), HighlightAgentTool(weather_specialist)],
         sub_agents=[prior_specialist, weather_specialist],
         output_key="risk_assessment"
@@ -33,7 +33,7 @@ prior_remote = RemoteA2aAgent(
     agent_card="http://localhost:8001" + AGENT_CARD_WELL_KNOWN_PATH,
     description="Calculates historical/prior delay and cancellation risk for a flight query."
 )
-from agents.weather.agent import build_weather_agent
+from agents.weather import build_weather_agent
 weather_local = build_weather_agent()
 
 prediction_agent = build_prediction_agent(prior_remote, weather_local)
