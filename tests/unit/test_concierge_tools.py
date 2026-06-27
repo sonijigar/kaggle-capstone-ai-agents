@@ -1,5 +1,5 @@
 import pytest
-from agents.concierge_tools import resolve_flight_query, search_flight_schedules
+from agents.concierge_tools import resolve_flight_query, search_flight_schedules, resolve_date
 
 def test_resolve_flight_query_12h_pm():
     res = resolve_flight_query("DL", "ORD", "ATL", "Monday", "7pm")
@@ -48,3 +48,34 @@ def test_search_flight_schedules_secondary_airport():
     res = search_flight_schedules("PAE", "SFO", "tomorrow")
     assert res["status"] == "success"
     assert res["flights"][0]["dep_time"] == "07:00am"
+
+
+def test_resolve_date_tomorrow():
+    res = resolve_date("tomorrow", today="2026-06-26")
+    assert res["date"] == "2026-06-27"
+    assert res["weekday"] == "Saturday"
+    assert res["day_of_week"] == 6
+
+def test_resolve_date_today():
+    res = resolve_date("today", today="2026-06-26")
+    assert res["date"] == "2026-06-26"
+
+def test_resolve_date_next_weekday():
+    # 2026-06-26 is a Friday; "next monday" -> 2026-06-29
+    res = resolve_date("next monday", today="2026-06-26")
+    assert res["date"] == "2026-06-29"
+    assert res["day_of_week"] == 1
+
+def test_resolve_date_bare_weekday_future():
+    # nearest upcoming Sunday from Fri 2026-06-26 -> 2026-06-28
+    res = resolve_date("sunday", today="2026-06-26")
+    assert res["date"] == "2026-06-28"
+
+def test_resolve_date_iso_passthrough():
+    res = resolve_date("2026-12-25", today="2026-06-26")
+    assert res["date"] == "2026-12-25"
+    assert res["weekday"] == "Friday"
+
+def test_resolve_date_unparsed():
+    res = resolve_date("someday", today="2026-06-26")
+    assert res["status"] == "unparsed"

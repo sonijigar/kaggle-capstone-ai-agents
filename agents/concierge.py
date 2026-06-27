@@ -10,7 +10,7 @@ from agents.custom_agent_tool import HighlightAgentTool
 from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_KNOWN_PATH
 from google.adk.models import Gemini
 from google.genai import types
-from agents.concierge_tools import resolve_flight_query, search_flight_schedules
+from agents.concierge_tools import resolve_date, resolve_flight_query, search_flight_schedules
 from agents.skill_loader import load_skill
 
 _SKILL_META, _SKILL_INSTRUCTION = load_skill("concierge")
@@ -26,7 +26,7 @@ def build_concierge_agent(prediction_specialist) -> Agent:
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
         instruction=_SKILL_INSTRUCTION,
-        tools=[search_flight_schedules, resolve_flight_query, HighlightAgentTool(prediction_specialist)],
+        tools=[resolve_date, search_flight_schedules, resolve_flight_query, HighlightAgentTool(prediction_specialist)],
         sub_agents=[prediction_specialist],
         output_key="final_answer"
     )
