@@ -10,8 +10,11 @@ from agents.custom_agent_tool import HighlightAgentTool
 from google.adk.agents.remote_a2a_agent import RemoteA2aAgent, AGENT_CARD_WELL_KNOWN_PATH
 from google.adk.models import Gemini
 from google.genai import types
-from agents.concierge_tools import resolve_date, resolve_flight_query, search_flight_schedules
+from agents.concierge_tools import resolve_date, resolve_flight_query
 from google.adk.skills import load_skill_from_dir
+from google.adk.tools.mcp_tool import McpToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
+from mcp import StdioServerParameters
 
 _SKILL = load_skill_from_dir(Path(__file__).parent.parent / "skills" / "concierge")
 
@@ -24,7 +27,20 @@ def build_concierge_agent(prediction_specialist) -> Agent:
             retry_options=types.HttpRetryOptions(attempts=6),
         ),
         instruction=_SKILL.instructions,
-        tools=[resolve_date, search_flight_schedules, resolve_flight_query, HighlightAgentTool(prediction_specialist)],
+        tools=[
+            # Keyless Google Flights MCP (fli / fast-flights) via uvx — REAL flight search.
+            McpToolset(
+                connection_params=StdioConnectionParams(
+                    server_params=StdioServerParameters(
+                        command="uvx", args=["--from", "flights[mcp]", "fli-mcp"],
+                    ),
+                ),
+                tool_filter=["search_flights", "find_airports"],
+            ),
+            resolve_date,
+            resolve_flight_query,
+            HighlightAgentTool(prediction_specialist),
+        ],
         sub_agents=[prediction_specialist],
         output_key="final_answer"
     )
