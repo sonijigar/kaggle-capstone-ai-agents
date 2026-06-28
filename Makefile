@@ -17,7 +17,13 @@ prewarm:
 	@command -v npx >/dev/null || { echo "ERROR: 'npx'/Node not found -> https://nodejs.org"; exit 1; }
 	uv run python scripts/prewarm.py
 
+# Start the SHARED flight-search MCP as an HTTP service (production-shaped; agents connect to it
+# via FLIGHTS_MCP_URL). Run this in its own terminal BEFORE 'make playground'.
+mcp-flights:
+	uvx --from "flights[mcp]" fli-mcp-http
+
 # Launch the ADK dev UI. In the browser, select the 'playground' app.
+# Requires 'make mcp-flights' running in another terminal.
 playground:
 	@echo "Open http://127.0.0.1:$(PORT)  and select the 'playground' app in the dropdown."
 	uv run adk web . --host 127.0.0.1 --port $(PORT) --allow_origins '*' --reload_agents

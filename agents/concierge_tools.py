@@ -1,5 +1,9 @@
+import logging
 import re
+import uuid
 from datetime import date, timedelta
+
+_booking_log = logging.getLogger("booking")
 
 WEEKDAYS = {
     "monday": 1, "tuesday": 2, "wednesday": 3, "thursday": 4,
@@ -93,4 +97,23 @@ def resolve_flight_query(carrier: str, origin: str, dest: str,
         "dest": dest.upper(),
         "day_of_week": day_of_week,
         "dep_time_blk": _dep_time_blk(hhmm)
+    }
+
+
+def book_flight(carrier: str, flight_no: str, origin: str, dest: str,
+                date: str, depart_time: str, price: float = 0.0) -> dict:
+    """SIMULATED flight booking. Logs the request and returns a confirmation.
+
+    This performs NO real ticketing or payment. It is gated by a human-in-the-loop
+    confirmation (require_confirmation=True) and only runs after the user approves.
+    """
+    pnr = uuid.uuid4().hex[:6].upper()
+    _booking_log.info("SIMULATED booking %s%s %s->%s %s %s $%s -> PNR %s",
+                      carrier, flight_no, origin, dest, date, depart_time, price, pnr)
+    return {
+        "status": "booked",
+        "pnr": pnr,
+        "sandbox": True,
+        "message": (f"Booked (simulated): {carrier}{flight_no} {origin}->{dest} "
+                    f"on {date} at {depart_time}. Confirmation PNR {pnr}."),
     }
